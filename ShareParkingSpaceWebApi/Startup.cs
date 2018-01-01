@@ -36,7 +36,7 @@ namespace ShareParkingSpaceWebApi
             services.AddIdentity<ApplicationUser, IdentityRole>(options => {
                 options.Password.RequireDigit = false;
                 options.Password.RequireUppercase = false;
-                options.Password.RequireUppercase = false;
+                options.Password.RequireNonAlphanumeric = false;
             })
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
