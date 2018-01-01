@@ -11,6 +11,10 @@ using Microsoft.Extensions.DependencyInjection;
 using ShareParkingSpaceWebApi.Data;
 using ShareParkingSpaceWebApi.Models;
 using ShareParkingSpaceWebApi.Services;
+using System.IdentityModel.Tokens.Jwt;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace ShareParkingSpaceWebApi
 {
@@ -29,13 +33,42 @@ namespace ShareParkingSpaceWebApi
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
 
-            services.AddIdentity<ApplicationUser, IdentityRole>()
+            services.AddIdentity<ApplicationUser, IdentityRole>(options => {
+                options.Password.RequireDigit = false;
+                options.Password.RequireUppercase = false;
+                options.Password.RequireUppercase = false;
+            })
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
 
+
+            // JWT 
+            JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear(); // => remove default claims
+            services
+             .AddAuthentication(options =>
+             {
+                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                 options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+
+             })
+             .AddJwtBearer(cfg =>
+             {
+                 cfg.RequireHttpsMetadata = false;
+                 cfg.SaveToken = true;
+                 cfg.TokenValidationParameters = new TokenValidationParameters
+                 {
+                     ValidIssuer = Configuration["jwt:JwtIssuer"],
+                     ValidAudience = Configuration["jwt:JwtIssuer"],
+                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["jwt:JwtKey"])),
+                     ClockSkew = TimeSpan.Zero // remove delay of token when expire
+                 };
+             });
+
+
             // Add application services.
             services.AddTransient<IEmailSender, EmailSender>();
-
+            services.AddCors();
             services.AddMvc();
         }
 
@@ -53,9 +86,16 @@ namespace ShareParkingSpaceWebApi
                 app.UseExceptionHandler("/Home/Error");
             }
 
+            app.UseCors(builder =>
+            {
+                builder.AllowAnyHeader();
+                builder.AllowAnyOrigin();
+            });
+
             app.UseStaticFiles();
 
             app.UseAuthentication();
+
 
             app.UseMvc(routes =>
             {
