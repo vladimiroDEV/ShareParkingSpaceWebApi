@@ -63,7 +63,11 @@ namespace ShareParkingSpaceWebApi
                      IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["jwt:JwtKey"])),
                      ClockSkew = TimeSpan.Zero // remove delay of token when expire
                  };
-             });
+             })
+             .AddGoogle(options=> {
+                 options.ClientId = "995790095609-o91b64gtrekl8604olheunfubupv4mu7.apps.googleusercontent.com";
+                 options.ClientSecret = "rfQyvRDstOErY6pS3GnTrTTW";
+             } );
 
 
             // Add application services.
