@@ -11,6 +11,7 @@ using ShareParkingSpaceWebApi.Models;
 using ShareParkingSpaceWebApi.Models.AccountViewModels;
 using ShareParkingSpaceWebApi.Extensions;
 using Microsoft.AspNetCore.Authorization;
+using ShareParkingSpaceWebApi.Models.Helpers;
 
 namespace ShareParkingSpaceWebApi.Controllers.API
 {
@@ -80,6 +81,74 @@ namespace ShareParkingSpaceWebApi.Controllers.API
         #endregion
 
 
-        
+        #region Auto
+        public IActionResult UpdateAutoInfo([FromBody]Auto model)
+        {
+            var userID = User.getUserId();
+            var userInfo = _context.Users.Where(u => u.Id == userID).FirstOrDefault();
+            if (userInfo == null) return NotFound();
+
+            var auto = _context.Auto.Where(a => a.UderID == userID).SingleOrDefault();
+
+           
+            // non esiste nel database auto asociata all user 
+            if (auto == null)
+            {
+                auto = new Auto();
+                auto.CarBrend = model.CarBrend;
+                auto.CarModel = model.CarModel;
+                auto.CarColor = model.CarColor;
+                auto.NumberPlate = model.NumberPlate;
+                auto.UderID = userID;
+                _context.Auto.Add(auto);
+
+            }else
+            {
+                auto.CarBrend = model.CarBrend;
+                auto.CarModel = model.CarModel;
+                auto.CarColor = model.CarColor;
+                auto.NumberPlate = model.NumberPlate;
+            }
+            _context.SaveChanges();
+            return Ok();
+                
+
+        }
+
+
+        #endregion
+
+        #region Credit 
+
+        public IActionResult UpdateUserCredit([FromBody]UpdateUserCreditViewModel model)
+        {
+            var userID = User.getUserId();
+            var userInfo = _context.Users.Where(u => u.Id == userID).FirstOrDefault();
+            if (userInfo == null) return NotFound();
+
+            switch(model.Action) {
+                case CreditAction.Refill:
+                    userInfo.Credits += model.Credit;
+                    break;
+                case CreditAction.Withdraw:
+                    userInfo.Credits -= model.Credit;
+                    break;
+
+                default:
+                    break;
+            }
+
+           
+
+            _context.SaveChanges();
+            return Ok();
+
+        }
+
+        #endregion  
+
+
+
+
     }
 }

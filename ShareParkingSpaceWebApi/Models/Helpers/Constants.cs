@@ -18,4 +18,11 @@ namespace ShareParkingSpaceWebApi.Models.Helpers
         Deleted = 4,
         Leave=5 // quando abbandona
     }
+    public enum  CreditAction
+    {
+        Refill =1,
+        Withdraw =2
+
+    }
+
 }

@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using ShareParkingSpaceWebApi.Models.Helpers;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace ShareParkingSpaceWebApi.Models.AccountViewModels
 {
@@ -16,5 +13,11 @@ namespace ShareParkingSpaceWebApi.Models.AccountViewModels
         public double Credits { get; set; }
 
         public Auto Auto { get; set; }
+    }
+
+    public class UpdateUserCreditViewModel
+    {
+        public double Credit { get; set; }
+        public CreditAction Action { get; set; }
     }
 }
