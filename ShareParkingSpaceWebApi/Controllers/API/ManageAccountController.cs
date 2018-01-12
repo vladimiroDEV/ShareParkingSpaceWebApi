@@ -125,21 +125,30 @@ namespace ShareParkingSpaceWebApi.Controllers.API
             var userID = User.getUserId();
             var userInfo = _context.Users.Where(u => u.Id == userID).FirstOrDefault();
             if (userInfo == null) return NotFound();
+            CreditTransactions transaction = new CreditTransactions();
+            transaction.Amount = model.Credit;
+            transaction.UserSrc = userID;
+            transaction.Date = DateTime.Now;
+            transaction.Action = model.Action;
 
-            switch(model.Action) {
+
+
+            switch (model.Action) {
                 case CreditAction.Refill:
                     userInfo.Credits += model.Credit;
+                    
                     break;
                 case CreditAction.Withdraw:
                     userInfo.Credits -= model.Credit;
                     break;
 
                 default:
+                    throw new NotImplementedException();
                     break;
             }
 
-           
 
+            _context.CreditTransactions.Add(transaction);
             _context.SaveChanges();
             return Ok();
 
