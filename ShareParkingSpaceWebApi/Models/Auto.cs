@@ -1,13 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace ShareParkingSpaceWebApi.Models
 {
-    public class UsersAuto
+    public class Auto
     {
-        public long ID { get; set; }
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public long AutoID { get; set; }
         public string CarBrend { get; set; }
         public string CarModel { get; set; }
         public string CarColor { get; set; }

@@ -8,13 +8,14 @@ namespace ShareParkingSpaceWebApi.Models.Helpers
     public enum ParkingSpaceState
     {
         Free = 1,
-        Reserverd = 2
+        Reserved = 2
     }
     public  enum ParkingSpaceAction
     {
         Create =1,
-        Modified =2,
+        Reserved =2,
         Used =3 ,   // quando il posto aout è stato usato 
-        Deleted = 4
+        Deleted = 4,
+        Leave=5 // quando abbandona
     }
 }

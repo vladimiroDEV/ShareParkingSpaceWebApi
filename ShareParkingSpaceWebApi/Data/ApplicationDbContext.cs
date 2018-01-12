@@ -10,6 +10,11 @@ namespace ShareParkingSpaceWebApi.Data
 {
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
+
+        public DbSet<Auto> Auto { get; set; }
+    //    public DbSet<ParkingSpaces> ParkingSpaces { get; set; }
+    //    public DbSet<ParkingSpaceActions> ParkingSpaceActions { get; set; }
+
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
         {

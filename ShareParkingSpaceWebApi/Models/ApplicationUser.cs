@@ -14,5 +14,11 @@ namespace ShareParkingSpaceWebApi.Models
         public string Surname { get; set; }
 
         public double Credits { get; set; }
+
+        public virtual  Auto Auto { get; set; }
+        public long AutoID { get; set; }
+
+
+
     }
 }
