@@ -12,6 +12,8 @@ namespace ShareParkingSpaceWebApi.Models
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long AutoID { get; set; }
+
+        public string UderID { get; set; }
         public string CarBrend { get; set; }
         public string CarModel { get; set; }
         public string CarColor { get; set; }

@@ -15,10 +15,6 @@ namespace ShareParkingSpaceWebApi.Models
 
         public double Credits { get; set; }
 
-        public virtual  Auto Auto { get; set; }
-        public long AutoID { get; set; }
-
-
-
+   
     }
 }
