@@ -13,8 +13,8 @@ namespace ShareParkingSpaceWebApi.Data
 
         public DbSet<Auto> Auto { get; set; }
         public DbSet<CreditTransactions> CreditTransactions { get; set; }
-                                           //    public DbSet<ParkingSpaces> ParkingSpaces { get; set; }
-                                           //    public DbSet<ParkingSpaceActions> ParkingSpaceActions { get; set; }
+        public DbSet<ParkingSpaces> ParkingSpaces { get; set; }
+        public DbSet<ParkingSpaceActions> ParkingSpaceActions { get; set; }
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
@@ -28,5 +28,6 @@ namespace ShareParkingSpaceWebApi.Data
             // For example, you can rename the ASP.NET Identity table names and more.
             // Add your customizations after calling base.OnModelCreating(builder);
         }
+       
     }
 }

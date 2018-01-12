@@ -7,12 +7,15 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ShareParkingSpaceWebApi.Data;
 using ShareParkingSpaceWebApi.Models;
+using Microsoft.AspNetCore.Authorization;
 using ShareParkingSpaceWebApi.Models.Helpers;
+using ShareParkingSpaceWebApi.Models.ParkingSpacesVM;
 
 namespace ShareParkingSpaceWebApi.Controllers.API
 {
     [Produces("application/json")]
     [Route("api/ParkingSpaces/[action]")]
+    [Authorize]
     public class ParkingSpacesController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -21,6 +24,50 @@ namespace ShareParkingSpaceWebApi.Controllers.API
         {
             _context = context;
         }
+
+
+      
+        [HttpPost]
+        public async Task<IActionResult> AddParkingSpace([FromBody] ParkingSpaces parkingSpaces)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var p_ac = createActionParkingSpace(parkingSpaces, ParkingSpaceAction.Create);
+            _context.ParkingSpaceActions.Add(p_ac);
+            _context.ParkingSpaces.Add(parkingSpaces);
+            
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction("GetParkingSpaces", new { id = parkingSpaces.ID }, parkingSpaces);
+        }
+
+        [HttpPost]
+
+        public async Task<IActionResult> ReserveParkingSpace([FromBody]ReserveParkingSpaceVM reserveModel)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            var parking = _context.ParkingSpaces.Where(i => i.ID == reserveModel.parkingID && i.State == ParkingSpaceState.Free).SingleOrDefault();
+            if (parking == null) return NotFound();
+
+            parking.State = ParkingSpaceState.Reserved;
+            parking.ReservedAutoID = reserveModel.AutoID;
+
+            var p_ac = createActionParkingSpace(parking, ParkingSpaceAction.Reserved);
+            _context.ParkingSpaceActions.Add(p_ac);
+            await _context.SaveChangesAsync();
+            return Ok();
+        }
+
+
+
+
+
 
         // GET: api/ParkingSpaces
         [HttpGet]
@@ -83,24 +130,6 @@ namespace ShareParkingSpaceWebApi.Controllers.API
             return NoContent();
         }
 
-        // POST: api/ParkingSpaces
-        [HttpPost]
-        public async Task<IActionResult> AddParkingSpaces([FromBody] ParkingSpaces parkingSpaces)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-            var p_action = await CreateParkingAction(parkingSpaces, ParkingSpaceAction.Create);
-
-            _context.ParkingSpaces.Add(parkingSpaces);
-            _context.ParkingSpaceActions.Add(p_action);
-          
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction("GetParkingSpaces", new { id = parkingSpaces.ID }, parkingSpaces);
-        }
-
         // DELETE: api/ParkingSpaces/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteParkingSpaces([FromRoute] long id)
@@ -126,20 +155,19 @@ namespace ShareParkingSpaceWebApi.Controllers.API
         {
             return _context.ParkingSpaces.Any(e => e.ID == id);
         }
-
-        private Task<ParkingSpaceActions> CreateParkingAction(ParkingSpaces parkingSpaces, ParkingSpaceAction action)
+        private ParkingSpaceActions createActionParkingSpace(ParkingSpaces parking, ParkingSpaceAction action)
         {
-            ParkingSpaceActions _actions = new ParkingSpaceActions();
-            _actions.DateAction = DateTime.Now;
-            _actions.Lat = parkingSpaces.Lat;
-            _actions.Long = parkingSpaces.Long;
-            _actions.Action = action;
-            _actions.ReservedUsersAutoID = parkingSpaces.ReservedUsersAutoID;
-            _actions.UserID = parkingSpaces.UserID;
-           // _actions.UserAutoID = parkingSpaces.UserAutoID;
-          
+            ParkingSpaceActions p_action = new ParkingSpaceActions();
+            p_action.Action = action;
+            p_action.UserID = parking.UserID;
+            p_action.DateAction = DateTime.Now;
+            p_action.AutoID = parking.AutoID;
+            p_action.ReservedAutoID = parking.ReservedAutoID;
+            p_action.Lat = parking.Lat;
+            p_action.Long = parking.Long;
 
-            return Task.FromResult<ParkingSpaceActions>(_actions);
+
+            return p_action;
 
         }
     }

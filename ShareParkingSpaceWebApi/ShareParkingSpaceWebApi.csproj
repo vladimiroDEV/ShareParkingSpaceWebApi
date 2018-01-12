@@ -5,10 +5,6 @@
     <UserSecretsId>aspnet-ShareParkingSpaceWebApi-32BA6400-4F50-45A3-BB75-DBC86A4C62C5</UserSecretsId>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Compile Remove="Controllers\API\ParkingSpacesController.cs" />
-  </ItemGroup>
-
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.3" />

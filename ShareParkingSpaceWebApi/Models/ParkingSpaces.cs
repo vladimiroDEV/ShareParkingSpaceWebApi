@@ -16,11 +16,11 @@ namespace ShareParkingSpaceWebApi.Models
 
         public string UserID { get; set; }
 
-        public virtual Auto Auto { get; set; }
+       // public virtual Auto Auto { get; set; }
         public long AutoID { get; set; }
 
-        public virtual Auto ReservedAuto { get; set; }
-        public long? ReservedAutoID { get; set; }
+      //  public virtual Auto ReservedAuto { get; set; }
+        public long ReservedAutoID { get; set; }
 
         public string Lat { get; set; }
         public string Long { get; set; }
