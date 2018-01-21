@@ -15,11 +15,13 @@ using System.IdentityModel.Tokens.Jwt;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.Cors;
 
 namespace ShareParkingSpaceWebApi.Controllers.API
 {
     [Produces("application/json")]
     [Route("api/AccountApi/[action]")]
+    [DisableCors]
     public class AccountApiController : Controller
     {
         private UserManager<ApplicationUser> _userManager;
@@ -62,6 +64,8 @@ namespace ShareParkingSpaceWebApi.Controllers.API
                     _logger.LogInformation("User logged in.");
                     var appUser = _userManager.Users.SingleOrDefault(r => r.Email == model.Email);
                     return await GenerateJwtToken(model.Email, appUser);
+                  
+
                 }
                 throw new ApplicationException("INVALID_LOGIN_ATTEMPT");
 

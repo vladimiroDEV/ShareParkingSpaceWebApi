@@ -92,8 +92,10 @@ namespace ShareParkingSpaceWebApi
 
             app.UseCors(builder =>
             {
-                builder.AllowAnyHeader();
                 builder.AllowAnyOrigin();
+                builder.AllowAnyHeader();
+                builder.AllowAnyMethod();
+                
             });
 
             app.UseStaticFiles();

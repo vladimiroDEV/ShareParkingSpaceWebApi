@@ -61,8 +61,7 @@ namespace ShareParkingSpaceWebApi.Controllers.API
         }
 
         [HttpPost]
-        
-        public IActionResult UpdateUserInfo([FromBody]UserInfoViewModel model)
+        public IActionResult UpdateUserProfile([FromBody]UserProfileViewModel model)
         {
             var userID = User.getUserId();
             var userInfo = _context.Users.Where(u => u.Id == userID).FirstOrDefault();
@@ -73,16 +72,16 @@ namespace ShareParkingSpaceWebApi.Controllers.API
             userInfo.Surname = model.Surname;
 
             _context.SaveChanges();
-            return Ok();
+            return GetUserInfo();
 
         }
-
 
         #endregion
 
 
         #region Auto
-        public IActionResult UpdateAutoInfo([FromBody]Auto model)
+        [HttpPost]
+        public IActionResult UpdateAutoInfo([FromBody]UserAutoViewModel model)
         {
             var userID = User.getUserId();
             var userInfo = _context.Users.Where(u => u.Id == userID).FirstOrDefault();
@@ -110,7 +109,7 @@ namespace ShareParkingSpaceWebApi.Controllers.API
                 auto.NumberPlate = model.NumberPlate;
             }
             _context.SaveChanges();
-            return Ok();
+            return GetUserInfo();
                 
 
         }
@@ -120,7 +119,7 @@ namespace ShareParkingSpaceWebApi.Controllers.API
 
         #region Credit 
 
-        public IActionResult UpdateUserCredit([FromBody]UpdateUserCreditViewModel model)
+        public IActionResult UpdateUserCredit([FromBody]UserCreditViewModel model)
         {
             var userID = User.getUserId();
             var userInfo = _context.Users.Where(u => u.Id == userID).FirstOrDefault();
@@ -150,7 +149,7 @@ namespace ShareParkingSpaceWebApi.Controllers.API
 
             _context.CreditTransactions.Add(transaction);
             _context.SaveChanges();
-            return Ok();
+            return GetUserInfo();
 
         }
 
