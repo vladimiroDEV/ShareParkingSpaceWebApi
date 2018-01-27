@@ -10,6 +10,7 @@ using ShareParkingSpaceWebApi.Models;
 using Microsoft.AspNetCore.Authorization;
 using ShareParkingSpaceWebApi.Models.Helpers;
 using ShareParkingSpaceWebApi.Models.ParkingSpacesVM;
+using ShareParkingSpaceWebApi.Extensions;
 
 namespace ShareParkingSpaceWebApi.Controllers.API
 {
@@ -34,6 +35,11 @@ namespace ShareParkingSpaceWebApi.Controllers.API
             {
                 return BadRequest(ModelState);
             }
+            var userID = User.getUserId();
+            var auto = _context.Auto.Where(a => a.UderID == userID).FirstOrDefault();
+            parkingSpaces.AutoID = auto.AutoID;
+            parkingSpaces.UserID = userID;
+            parkingSpaces.State = ParkingSpaceState.Free;
 
             var p_ac = createActionParkingSpace(parkingSpaces, ParkingSpaceAction.Create);
             _context.ParkingSpaceActions.Add(p_ac);
@@ -45,7 +51,6 @@ namespace ShareParkingSpaceWebApi.Controllers.API
         }
 
         [HttpPost]
-
         public async Task<IActionResult> ReserveParkingSpace([FromBody]ReserveParkingSpaceVM reserveModel)
         {
             if (!ModelState.IsValid)
@@ -65,90 +70,11 @@ namespace ShareParkingSpaceWebApi.Controllers.API
         }
 
 
-
-
-
-
         // GET: api/ParkingSpaces
         [HttpGet]
-        public IEnumerable<ParkingSpaces> GetParkingSpaces()
+        public IEnumerable<ParkingSpaces> GetParkingSpaces(string location)
         {
-            return _context.ParkingSpaces;
-        }
-
-        // GET: api/ParkingSpaces/5
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetParkingSpaces([FromRoute] long id)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            var parkingSpaces = await _context.ParkingSpaces.SingleOrDefaultAsync(m => m.ID == id);
-
-            if (parkingSpaces == null)
-            {
-                return NotFound();
-            }
-
-            return Ok(parkingSpaces);
-        }
-
-        // PUT: api/ParkingSpaces/5
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutParkingSpaces([FromRoute] long id, [FromBody] ParkingSpaces parkingSpaces)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            if (id != parkingSpaces.ID)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(parkingSpaces).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!ParkingSpacesExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
-        }
-
-        // DELETE: api/ParkingSpaces/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteParkingSpaces([FromRoute] long id)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            var parkingSpaces = await _context.ParkingSpaces.SingleOrDefaultAsync(m => m.ID == id);
-            if (parkingSpaces == null)
-            {
-                return NotFound();
-            }
-
-            _context.ParkingSpaces.Remove(parkingSpaces);
-            await _context.SaveChangesAsync();
-
-            return Ok(parkingSpaces);
+            return _context.ParkingSpaces.Where(s=>s.Location ==location && s.State == ParkingSpaceState.Free).ToList();
         }
 
         private bool ParkingSpacesExists(long id)

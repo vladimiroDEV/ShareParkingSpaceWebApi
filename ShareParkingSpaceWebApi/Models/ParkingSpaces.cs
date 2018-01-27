@@ -24,6 +24,7 @@ namespace ShareParkingSpaceWebApi.Models
 
         public string Lat { get; set; }
         public string Long { get; set; }
+        public string Location { get; set; }
 
 
         public ParkingSpaceState State { get; set; }
