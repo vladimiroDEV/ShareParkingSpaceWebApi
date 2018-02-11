@@ -27,7 +27,7 @@ namespace ShareParkingSpaceWebApi.Controllers.API
         }
 
 
-      
+
         [HttpPost]
         public async Task<IActionResult> AddParkingSpace([FromBody] ParkingSpaces parkingSpaces)
         {
@@ -44,7 +44,7 @@ namespace ShareParkingSpaceWebApi.Controllers.API
             var p_ac = createActionParkingSpace(parkingSpaces, ParkingSpaceAction.Create);
             _context.ParkingSpaceActions.Add(p_ac);
             _context.ParkingSpaces.Add(parkingSpaces);
-            
+
             await _context.SaveChangesAsync();
 
             return CreatedAtAction("GetParkingSpaces", new { id = parkingSpaces.ID }, parkingSpaces);
@@ -71,7 +71,10 @@ namespace ShareParkingSpaceWebApi.Controllers.API
 
 
         // GET: api/ParkingSpaces
-        [HttpGet]
+        //[Route("api/ParkingSpaces/GetParkingSpaces/{location}")]
+
+        [HttpGet("{location}")]
+        //[Route("GetParkingSpaces/{location}")]
         public IEnumerable<ParkingSpaces> GetParkingSpaces(string location)
         {
             return _context.ParkingSpaces.Where(s=>s.Location ==location && s.State == ParkingSpaceState.Free).ToList();

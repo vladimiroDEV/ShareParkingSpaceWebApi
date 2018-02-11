@@ -16,6 +16,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Cors;
+using System.Net;
 
 namespace ShareParkingSpaceWebApi.Controllers.API
 {
@@ -53,7 +54,7 @@ namespace ShareParkingSpaceWebApi.Controllers.API
 
         [HttpPost]
         [AllowAnonymous]
-        public async Task<object> Login([FromBody]LoginViewModel model)
+        public async Task<IActionResult> Login([FromBody]LoginViewModel model)
         {
          
                 // This doesn't count login failures towards account lockout
@@ -63,17 +64,19 @@ namespace ShareParkingSpaceWebApi.Controllers.API
                 {
                     _logger.LogInformation("User logged in.");
                     var appUser = _userManager.Users.SingleOrDefault(r => r.Email == model.Email);
-                    return await GenerateJwtToken(model.Email, appUser);
-                  
+                    var token =  await GenerateJwtToken(model.Email, appUser);
+                return Ok(token);  
 
                 }
-                throw new ApplicationException("INVALID_LOGIN_ATTEMPT");
+
+            return NotFound(); 
+                //throw new ApplicationException("INVALID_LOGIN_ATTEMPT");
 
         }
 
         [HttpPost]
         [AllowAnonymous]
-        public async Task<object> Register([FromBody]RegisterViewModel model)
+        public async Task<IActionResult> Register([FromBody]RegisterViewModel model)
         {  
             
                 var user = new ApplicationUser { UserName = model.Email, Email = model.Email };
@@ -84,14 +87,15 @@ namespace ShareParkingSpaceWebApi.Controllers.API
                 await _signInManager.SignInAsync(user, isPersistent: false);
 
                 var appUser = _userManager.Users.SingleOrDefault(r => r.Email == model.Email);
-                return await GenerateJwtToken(model.Email, appUser);
+                var token =  await GenerateJwtToken(model.Email, appUser);
+                return Ok(token);
 
                 //  var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                 // var callbackUrl = Url.EmailConfirmationLink(user.Id, code, Request.Scheme);
                 // await _emailSender.SendEmailConfirmationAsync(model.Email, callbackUrl)
 
             }
-
+          //  throw new StatusCodeResult(HttpStatusCode.NotFound);
             throw new ApplicationException("INVALID_LOGIN_ATTEMPT");
 
         }

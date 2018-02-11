@@ -105,9 +105,14 @@ namespace ShareParkingSpaceWebApi
 
             app.UseMvc(routes =>
             {
+                //routes.MapRoute(
+                //  name: "GetParkingSpaces",
+                //  template: "api/ParkingSpaces/GetParkingSpaces/{location}");
                 routes.MapRoute(
                     name: "default",
                     template: "{controller=Home}/{action=Index}/{id?}");
+              
+              
             });
         }
     }
