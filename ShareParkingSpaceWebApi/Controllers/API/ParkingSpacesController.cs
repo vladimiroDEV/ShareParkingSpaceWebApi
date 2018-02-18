@@ -80,6 +80,27 @@ namespace ShareParkingSpaceWebApi.Controllers.API
             return _context.ParkingSpaces.Where(s=>s.Location ==location && s.State == ParkingSpaceState.Free).ToList();
         }
 
+        [HttpGet("{Id}")]
+        public IActionResult GetParkingSpceInfo(long id)
+        {
+
+            var parkingSpace = _context.ParkingSpaces.Where(i => i.ID == id).SingleOrDefault();
+                if(parkingSpace == null) return NotFound();
+
+            var user = _context.Users.Where(i => i.Id == parkingSpace.UserID).SingleOrDefault();
+                if (user == null) return NotFound();
+
+            var auto = _context.Auto.Where(i => i.AutoID == parkingSpace.AutoID).SingleOrDefault();
+                if (auto == null) return NotFound();
+
+            ParkingInfoVM pk = new ParkingInfoVM();
+            pk.auto = auto;
+            pk.username = user.DisplayName;
+            pk.lat = parkingSpace.Lat;
+            pk.lon = parkingSpace.Long;
+            return Ok(pk);
+        }
+
         private bool ParkingSpacesExists(long id)
         {
             return _context.ParkingSpaces.Any(e => e.ID == id);
