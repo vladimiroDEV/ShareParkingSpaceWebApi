@@ -15,6 +15,7 @@ using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using ShareParkingSpaceWebApi.Controllers.HUBS;
 
 namespace ShareParkingSpaceWebApi
 {
@@ -69,6 +70,8 @@ namespace ShareParkingSpaceWebApi
                  options.ClientSecret = "rfQyvRDstOErY6pS3GnTrTTW";
              } );
 
+            services.AddSignalR();
+
 
             // Add application services.
             services.AddTransient<IEmailSender, EmailSender>();
@@ -101,6 +104,10 @@ namespace ShareParkingSpaceWebApi
             app.UseStaticFiles();
 
             app.UseAuthentication();
+            app.UseSignalR(routes =>
+            {
+                routes.MapHub<ManageParkingHub>("ManageParkingHub");
+            });
 
 
             app.UseMvc(routes =>

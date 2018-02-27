@@ -11,6 +11,8 @@ using Microsoft.AspNetCore.Authorization;
 using ShareParkingSpaceWebApi.Models.Helpers;
 using ShareParkingSpaceWebApi.Models.ParkingSpacesVM;
 using ShareParkingSpaceWebApi.Extensions;
+using Microsoft.AspNetCore.SignalR;
+using ShareParkingSpaceWebApi.Controllers.HUBS;
 
 namespace ShareParkingSpaceWebApi.Controllers.API
 {
@@ -20,10 +22,14 @@ namespace ShareParkingSpaceWebApi.Controllers.API
     public class ParkingSpacesController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private IHubContext<ManageParkingHub> _manageParkingHub;
 
-        public ParkingSpacesController(ApplicationDbContext context)
+        public ParkingSpacesController(
+            ApplicationDbContext context,
+            IHubContext<ManageParkingHub> manageParkingHub)
         {
             _context = context;
+            _manageParkingHub = manageParkingHub;
         }
 
 
@@ -46,6 +52,9 @@ namespace ShareParkingSpaceWebApi.Controllers.API
             _context.ParkingSpaces.Add(parkingSpaces);
 
             await _context.SaveChangesAsync();
+            var freeSpaces = GetParkingSpaces(parkingSpaces.Location);
+            // per aggiornare hub con i pakeggi liberi
+            await _manageParkingHub.Clients.Group(parkingSpaces.Location).InvokeAsync("send", freeSpaces);
 
             return CreatedAtAction("GetParkingSpaces", new { id = parkingSpaces.ID }, parkingSpaces);
         }
@@ -78,6 +87,30 @@ namespace ShareParkingSpaceWebApi.Controllers.API
         public IEnumerable<ParkingSpaces> GetParkingSpaces(string location)
         {
             return _context.ParkingSpaces.Where(s=>s.Location ==location && s.State == ParkingSpaceState.Free).ToList();
+        }
+
+        [HttpGet("{id}")]
+        public IActionResult GetParkingSpceInfo(long id)
+        {
+            var parking = _context.ParkingSpaces.Where(i => i.ID == id).SingleOrDefault();
+            if (parking == null) return NotFound();
+            var auto = _context.Auto.Where(a => a.AutoID == parking.AutoID).SingleOrDefault();
+            var userinfo = _context.Users.Where(u => u.Id == parking.UserID).SingleOrDefault();
+
+            return new JsonResult(new ParkingInfoVM()
+            {
+                ParkingID = parking.ID,
+                UserAuto = auto,
+                username = userinfo.Email,
+                lat = parking.Lat,
+                lon = parking.Long
+
+            });
+
+
+
+
+
         }
 
         private bool ParkingSpacesExists(long id)
