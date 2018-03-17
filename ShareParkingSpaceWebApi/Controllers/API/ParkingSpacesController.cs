@@ -75,7 +75,7 @@ namespace ShareParkingSpaceWebApi.Controllers.API
             var p_ac = createActionParkingSpace(parking, ParkingSpaceAction.Reserved);
             _context.ParkingSpaceActions.Add(p_ac);
             await _context.SaveChangesAsync();
-            return Ok();
+            return Ok(ModelState);
         }
 
 
