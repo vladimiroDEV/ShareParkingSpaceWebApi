@@ -72,9 +72,23 @@ namespace ShareParkingSpaceWebApi.Controllers.API
             parking.State = ParkingSpaceState.Reserved;
             parking.ReservedAutoID = reserveModel.AutoID;
 
+
             var p_ac = createActionParkingSpace(parking, ParkingSpaceAction.Reserved);
             _context.ParkingSpaceActions.Add(p_ac);
             await _context.SaveChangesAsync();
+
+            // riaggiorna la mappa a tutti i client 
+            var freeSpaces = GetParkingSpaces(parking.Location);
+            // per aggiornare hub con i parkeggi liberi
+            await _manageParkingHub.Clients.Group(parking.Location).InvokeAsync("send", freeSpaces);
+
+
+            // avvisa utente del parcheggio riservato
+
+            var spaces  = _context.ParkingSpaces.Where(i => i.UserID == parking.UserID).ToList();
+            await _manageParkingHub.Clients.Group(parking.UserID).InvokeAsync("send", spaces);
+
+
             return Ok(ModelState);
         }
 

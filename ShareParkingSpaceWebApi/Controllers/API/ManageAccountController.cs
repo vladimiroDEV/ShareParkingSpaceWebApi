@@ -12,6 +12,8 @@ using ShareParkingSpaceWebApi.Models.AccountViewModels;
 using ShareParkingSpaceWebApi.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using ShareParkingSpaceWebApi.Models.Helpers;
+using ShareParkingSpaceWebApi.Controllers.HUBS;
+using Microsoft.AspNetCore.SignalR;
 
 namespace ShareParkingSpaceWebApi.Controllers.API
 {
@@ -24,20 +26,23 @@ namespace ShareParkingSpaceWebApi.Controllers.API
         private readonly ApplicationDbContext _context;
         private readonly ILogger<ManageAccountController> _logger;
         private readonly UserManager<ApplicationUser> _userManager;
+        private IHubContext<ManageParkingHub> _manageParkingHub;
 
         public ManageAccountController(
             ApplicationDbContext context,
             UserManager<ApplicationUser> userManager,
+            IHubContext<ManageParkingHub> manageParkingHub,
              ILogger<ManageAccountController> logger)
         {
             _context = context;
+            _manageParkingHub = manageParkingHub;
             _logger = logger;
             _userManager = userManager;
         }
 
         #region UserInfo
         [HttpGet]
-        public IActionResult GetUserInfo()
+        public async Task<IActionResult> GetUserInfo()
         {
 
             var userID = User.getUserId();
@@ -52,16 +57,24 @@ namespace ShareParkingSpaceWebApi.Controllers.API
 
             model.DisplayName = user.DisplayName;
             model.Name = user.Name;
+            model.UserId = user.Id;
             model.Surname = user.Surname;
             model.Credits = user.Credits;
             model.Auto = auto;
+            model.Email = user.Email;
+         
+
+            // return my parking spaces HUB
+
+            var mysharedSpaces = _context.ParkingSpaces.Where(i => i.UserID == user.Id).ToList();
+            await _manageParkingHub.Clients.Group(user.Id).InvokeAsync("send", mysharedSpaces);
 
             return Ok(model);
 
         }
 
         [HttpPost]
-        public IActionResult UpdateUserProfile([FromBody]UserProfileViewModel model)
+        public async Task<IActionResult> UpdateUserProfile([FromBody]UserProfileViewModel model)
         {
             var userID = User.getUserId();
             var userInfo = _context.Users.Where(u => u.Id == userID).FirstOrDefault();
@@ -72,7 +85,7 @@ namespace ShareParkingSpaceWebApi.Controllers.API
             userInfo.Surname = model.Surname;
 
             _context.SaveChanges();
-            return GetUserInfo();
+            return  await GetUserInfo();
 
         }
 
@@ -81,7 +94,7 @@ namespace ShareParkingSpaceWebApi.Controllers.API
 
         #region Auto
         [HttpPost]
-        public IActionResult UpdateAutoInfo([FromBody]UserAutoViewModel model)
+        public async Task<IActionResult> UpdateAutoInfo([FromBody]UserAutoViewModel model)
         {
             var userID = User.getUserId();
             var userInfo = _context.Users.Where(u => u.Id == userID).FirstOrDefault();
@@ -109,7 +122,7 @@ namespace ShareParkingSpaceWebApi.Controllers.API
                 auto.NumberPlate = model.NumberPlate;
             }
             _context.SaveChanges();
-            return GetUserInfo();
+            return await  GetUserInfo();
                 
 
         }
@@ -119,7 +132,7 @@ namespace ShareParkingSpaceWebApi.Controllers.API
 
         #region Credit 
 
-        public IActionResult UpdateUserCredit([FromBody]UserCreditViewModel model)
+        public async Task<IActionResult> UpdateUserCredit([FromBody]UserCreditViewModel model)
         {
             var userID = User.getUserId();
             var userInfo = _context.Users.Where(u => u.Id == userID).FirstOrDefault();
@@ -149,7 +162,7 @@ namespace ShareParkingSpaceWebApi.Controllers.API
 
             _context.CreditTransactions.Add(transaction);
             _context.SaveChanges();
-            return GetUserInfo();
+            return await GetUserInfo();
 
         }
 

@@ -9,6 +9,8 @@ namespace ShareParkingSpaceWebApi.Models.AccountViewModels
         public string DisplayName { get; set; }
         public string Name { get; set; }
         public string Surname { get; set; }
+        public string Email { get; set; }
+        public string UserId { get; set; }
 
         public double Credits { get; set; }
 
