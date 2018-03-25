@@ -13,6 +13,7 @@ using ShareParkingSpaceWebApi.Models.ParkingSpacesVM;
 using ShareParkingSpaceWebApi.Extensions;
 using Microsoft.AspNetCore.SignalR;
 using ShareParkingSpaceWebApi.Controllers.HUBS;
+using Microsoft.AspNetCore.Identity;
 
 namespace ShareParkingSpaceWebApi.Controllers.API
 {
@@ -23,13 +24,16 @@ namespace ShareParkingSpaceWebApi.Controllers.API
     {
         private readonly ApplicationDbContext _context;
         private IHubContext<ManageParkingHub> _manageParkingHub;
+        private UserManager<ApplicationUser> _userManager;
 
         public ParkingSpacesController(
+             UserManager<ApplicationUser> userManager,
             ApplicationDbContext context,
             IHubContext<ManageParkingHub> manageParkingHub)
         {
             _context = context;
             _manageParkingHub = manageParkingHub;
+            _userManager = userManager;
         }
 
 
@@ -85,12 +89,46 @@ namespace ShareParkingSpaceWebApi.Controllers.API
 
             // avvisa utente del parcheggio riservato
 
-            var spaces  = _context.ParkingSpaces.Where(i => i.UserID == parking.UserID).ToList();
-            await _manageParkingHub.Clients.Group(parking.UserID).InvokeAsync("send", spaces);
+            
+            ReservedAutoVM vm = new ReservedAutoVM();
+            Auto  auto = _context.Auto.Where(i => i.AutoID == parking.ReservedAutoID).SingleOrDefault();
+            vm.UserAuto = auto;
+            var us = _context.Users.Where(u => u.Id == auto.UderID).SingleOrDefault();
+            if (us != null)
+                vm.Username = us.DisplayName != "" ? us.DisplayName : us.Email;
+            await _manageParkingHub.Clients.Group(parking.UserID).InvokeAsync("send", vm);
 
 
             return Ok(ModelState);
         }
+
+
+        [HttpGet("{userId}")]
+        public async Task<IActionResult> getMySharedParking(string userId)
+        {
+
+            var spaces = _context.ParkingSpaces.Where(i => i.UserID == userId).SingleOrDefault();
+            if (spaces == null) return NotFound();
+            Auto auto = null;
+            ApplicationUser us = null;
+            ReservedAutoVM vm = new ReservedAutoVM();
+
+            if (spaces.State == ParkingSpaceState.Reserved)
+            {
+                auto = _context.Auto.Where(a => a.AutoID == spaces.ReservedAutoID).SingleOrDefault();
+                us = _context.Users.Where(u => u.Id == auto.UderID).SingleOrDefault();
+                vm.UserAuto = auto;
+                if (us != null)
+                    vm.Username = us.DisplayName != "" ? us.DisplayName : us.Email;
+                    
+            }
+
+            await _manageParkingHub.Clients.Group(userId).InvokeAsync("send", vm);
+
+            return Ok(vm);
+
+        }
+
 
 
         // GET: api/ParkingSpaces
@@ -100,7 +138,10 @@ namespace ShareParkingSpaceWebApi.Controllers.API
         //[Route("GetParkingSpaces/{location}")]
         public IEnumerable<ParkingSpaces> GetParkingSpaces(string location)
         {
-            return _context.ParkingSpaces.Where(s=>s.Location ==location && s.State == ParkingSpaceState.Free).ToList();
+            var userID = User.getUserId();
+            return _context.ParkingSpaces
+                .Where(s=>s.Location ==location && s.State == ParkingSpaceState.Free && s.UserID != userID)
+                .ToList();
         }
 
         [HttpGet("{id}")]

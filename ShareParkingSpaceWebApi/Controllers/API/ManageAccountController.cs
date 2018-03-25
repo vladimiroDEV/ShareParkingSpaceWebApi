@@ -64,11 +64,6 @@ namespace ShareParkingSpaceWebApi.Controllers.API
             model.Email = user.Email;
          
 
-            // return my parking spaces HUB
-
-            var mysharedSpaces = _context.ParkingSpaces.Where(i => i.UserID == user.Id).ToList();
-            await _manageParkingHub.Clients.Group(user.Id).InvokeAsync("send", mysharedSpaces);
-
             return Ok(model);
 
         }
