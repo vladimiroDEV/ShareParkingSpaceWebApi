@@ -187,5 +187,25 @@ namespace ShareParkingSpaceWebApi.Controllers.API
             return p_action;
 
         }
+
+
+        [HttpPost]
+        public async Task<IActionResult> PaidForParkingSpace([FromBody]long ParkingId)
+        {
+            
+            var userid = User.getUserId();
+            var destiantionAutoID = _context.ParkingSpaces.Where(i => i.ID == ParkingId).Select(a => a.ReservedAutoID).SingleOrDefault();
+            var destinationUserId = _context.Auto.Where(i => i.AutoID == destiantionAutoID).Select(u => u.UderID).SingleOrDefault();
+
+            var sourceUser = _context.Users.Where(u => u.Id == userid).SingleOrDefault();
+            sourceUser.Credits = sourceUser.Credits - 1;
+
+            var destUser = _context.Users.Where(u => u.Id == destinationUserId).SingleOrDefault();
+            destUser.Credits = destUser.Credits + 1;
+
+            await _context.SaveChangesAsync();
+            return Ok(ModelState);
+
+        }
     }
 }
