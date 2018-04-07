@@ -90,7 +90,7 @@ namespace ShareParkingSpaceWebApi.Controllers.API
             // avvisa utente del parcheggio riservato
 
             
-            ReservedAutoVM vm = new ReservedAutoVM();
+            MyPakingVm vm = new MyPakingVm();
             Auto  auto = _context.Auto.Where(i => i.AutoID == parking.ReservedAutoID).SingleOrDefault();
             vm.UserAuto = auto;
             var us = _context.Users.Where(u => u.Id == auto.UderID).SingleOrDefault();
@@ -107,11 +107,14 @@ namespace ShareParkingSpaceWebApi.Controllers.API
         public async Task<IActionResult> getMySharedParking(string userId)
         {
 
-            var spaces = _context.ParkingSpaces.Where(i => i.UserID == userId).SingleOrDefault();
+            ParkingSpaces spaces = _context.ParkingSpaces.Where(i => i.UserID == userId).FirstOrDefault();
             if (spaces == null) return NotFound();
+
             Auto auto = null;
             ApplicationUser us = null;
-            ReservedAutoVM vm = new ReservedAutoVM();
+            MyPakingVm vm = new MyPakingVm();
+            vm.lat = spaces.Lat;
+            vm.lng = spaces.Long;
 
             if (spaces.State == ParkingSpaceState.Reserved)
             {
@@ -128,8 +131,6 @@ namespace ShareParkingSpaceWebApi.Controllers.API
             return Ok(vm);
 
         }
-
-
 
         // GET: api/ParkingSpaces
         //[Route("api/ParkingSpaces/GetParkingSpaces/{location}")]
