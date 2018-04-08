@@ -92,10 +92,10 @@ namespace ShareParkingSpaceWebApi.Controllers.API
             
             MyPakingVm vm = new MyPakingVm();
             Auto  auto = _context.Auto.Where(i => i.AutoID == parking.ReservedAutoID).SingleOrDefault();
-            vm.UserAuto = auto;
+  
             var us = _context.Users.Where(u => u.Id == auto.UderID).SingleOrDefault();
             if (us != null)
-                vm.Username = us.DisplayName != "" ? us.DisplayName : us.Email;
+                vm.username = us.DisplayName != null ? us.DisplayName : us.Email;
             await _manageParkingHub.Clients.Group(parking.UserID).InvokeAsync("send", vm);
 
 
@@ -122,7 +122,7 @@ namespace ShareParkingSpaceWebApi.Controllers.API
                 us = _context.Users.Where(u => u.Id == auto.UderID).SingleOrDefault();
                 vm.UserAuto = auto;
                 if (us != null)
-                    vm.Username = us.DisplayName != "" ? us.DisplayName : us.Email;
+                    vm.username = us.DisplayName != null ? us.DisplayName : us.Email;
                     
             }
 
@@ -132,6 +132,24 @@ namespace ShareParkingSpaceWebApi.Controllers.API
 
         }
 
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteMySharedParking([FromBody] ParkingSpaces p )
+        {
+            var parking = _context.ParkingSpaces.Where(i => i.UserID == p.UserID).FirstOrDefault();
+            if (parking == null) return NotFound();
+
+            var location = parking.Location;
+
+            _context.ParkingSpaces.Remove(parking);
+            _context.SaveChanges();
+            var freeSpaces = GetParkingSpaces(location);
+            // per aggiornare hub con i parkeggi liberi
+            await _manageParkingHub.Clients.Group(parking.Location).InvokeAsync("send", freeSpaces);
+
+            return Ok(ModelState);
+
+        }
         // GET: api/ParkingSpaces
         //[Route("api/ParkingSpaces/GetParkingSpaces/{location}")]
 
@@ -162,10 +180,6 @@ namespace ShareParkingSpaceWebApi.Controllers.API
                 lon = parking.Long
 
             });
-
-
-
-
 
         }
 
